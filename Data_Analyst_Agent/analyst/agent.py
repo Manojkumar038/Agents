@@ -1,7 +1,7 @@
 from google.adk.agents.llm_agent import Agent
 from .sub_agents.mongo_agent.agent import mongo_agent
 from .sub_agents.sql_agent.agent import sql_agent
-
+from .sub_agents.api_agent.agent import api_agent
 
 root_agent = Agent(
     model="gemini-2.5-flash",
@@ -23,6 +23,7 @@ root_agent = Agent(
         2. Decide which database the question refers to:
            - Use sql_agent for anything related to employees, departments, salaries, job titles, or organizational structure.
            - Use mongo_agent for anything related to movies, comments, users, theaters, or general Mflix data.
+           - Use api_agent for anything related to fake store, products & user details from fake store.
         3. Call ONLY the appropriate agent to run the query.
         4. After receiving the tool/agent result, present the final answer to the user:
            - Use clear explanations.
@@ -38,5 +39,5 @@ root_agent = Agent(
         - For the result from mongo_agent ignore the _id field. 
         Your final goal: 
         Select the correct agent, fetch accurate results, and present a clean, human-friendly answer.""",
-    sub_agents=[sql_agent, mongo_agent]
+    sub_agents=[sql_agent, mongo_agent, api_agent]
 )
