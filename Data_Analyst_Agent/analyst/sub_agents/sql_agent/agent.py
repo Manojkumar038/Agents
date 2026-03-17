@@ -1,6 +1,8 @@
 from datetime import date, datetime
 import mysql.connector
 from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.agents import LlmAgent
 from dotenv import load_dotenv
 import os
 
@@ -39,8 +41,12 @@ def get_result(query: str) -> dict:
         connection.close()
 
 
-sql_agent = Agent(
-    model="gemini-2.5-flash",
+sql_agent = LlmAgent(
+    model=LiteLlm(
+        api_base='https://openrouter.ai/api/v1',
+        model='openrouter/openai/gpt-oss-120b',
+        api_key='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'
+    ),
     name="sql_agent",
     description="Executes SQL on database using get_result tool",
     instruction="""
@@ -67,6 +73,8 @@ sql_agent = Agent(
            Instead reply: “The dataset is too large to return all rows. Please specify a LIMIT.”
         5. Use get_result(query) to execute SQL and retrieve results.
         6. Present the final answer in a clean, readable table format.
-        7. Only generate valid MySQL queries. """,
+        7. Only generate valid MySQL queries. 
+        8. If the query is not related to sql database redirect the user prompt to root agent.
+        9. Always show the user what query you have used to get the data.""",
     tools=[get_result]
 )

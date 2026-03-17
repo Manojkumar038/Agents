@@ -1,4 +1,5 @@
 from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
 import requests
 from typing import Dict, List, Any
 
@@ -60,7 +61,11 @@ def add_product(title: str, price: float) -> Dict[str, Any]:
 
 
 api_agent = Agent(
-    model="gemini-2.5-flash",
+    model=LiteLlm(
+        api_base='https://openrouter.ai/api/v1',
+        model='openrouter/openai/gpt-oss-120b',
+        api_key='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'
+    ),
     name="api_agent",
     description="Handles product queries and product creation using Fake Store API.",
     instruction="""

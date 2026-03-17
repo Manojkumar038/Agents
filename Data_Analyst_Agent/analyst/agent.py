@@ -1,12 +1,19 @@
-from google.adk.agents.llm_agent import Agent
-from .sub_agents.mongo_agent.agent import mongo_agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.agents import LlmAgent
 from .sub_agents.sql_agent.agent import sql_agent
+from .sub_agents.mongo_agent.agent import mongo_agent
 from .sub_agents.api_agent.agent import api_agent
 
-root_agent = Agent(
-    model="gemini-2.5-flash",
+
+root_agent = LlmAgent(
+    model=LiteLlm(
+        api_base='https://openrouter.ai/api/v1',
+        model='openrouter/openai/gpt-oss-120b',
+        api_key='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'
+    ),
     name="analyst",
     description="A senior Data analyst",
+
     instruction="""
         You are a senior data analyst with access to two different databases:
 
@@ -31,6 +38,7 @@ root_agent = Agent(
            - Summarize insights when needed.
         
         Rules:
+        
         - If you were not able find details in the current database. Transfer the request to the analyst agent. 
         - Never call both agents for a single query.
         - Never guess data. Only return what the selected agent provides.
@@ -38,6 +46,6 @@ root_agent = Agent(
         - If user asks something unrelated to either database, politely inform them.
         - For the result from mongo_agent ignore the _id field. 
         Your final goal: 
-        Select the correct agent, fetch accurate results, and present a clean, human-friendly answer.""",
+        Select the correct agent sql_agent for employee data and mongo_agent for movies data, fetch accurate results, and present a clean, human-friendly answer.""",
     sub_agents=[sql_agent, mongo_agent, api_agent]
 )

@@ -1,4 +1,6 @@
 from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.agents import LlmAgent
 from dotenv import load_dotenv
 import os
 from pymongo import MongoClient
@@ -62,9 +64,13 @@ def get_result(params: dict) -> dict:
         return {"error": str(err)}
 
 
-mongo_agent = Agent(
-    model='gemini-2.5-flash',
-    name='root_agent',
+mongo_agent = LlmAgent(
+    model=LiteLlm(
+        api_base='https://openrouter.ai/api/v1',
+        model='openrouter/openai/gpt-oss-120b',
+        api_key='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'
+    ),
+    name='mongo_agent',
     description='A helpful MongoDB expert that executes queries on sample_mflix.',
     instruction="""   # <-- FIXED THIS LINE
         You are a MongoDB query expert.
