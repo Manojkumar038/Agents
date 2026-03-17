@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import re
 import mysql.connector
 import os
 
@@ -12,7 +13,21 @@ user = os.getenv("USER")
 password = os.getenv("PASSWORD")
 database = os.getenv("DATABASE")
 
-print(host, user, password, database)
+LIMIT = 30
+
+LAST_QUERY = None
+OFFSET = 0
+
+
+def enforce_limit(query: str) -> str:
+
+    # if query already contains LIMIT, keep it
+    if re.search(r"\blimit\b", query, re.IGNORECASE):
+        return query
+
+    query = query.rstrip(";")
+
+    return f"{query} LIMIT {LIMIT}"
 
 @tool
 def get_database_schema() -> str:
@@ -58,7 +73,7 @@ def get_database_schema() -> str:
 def query_sql_database(query: str) -> str:
     """
     Execute a SQL query on the MySQL database and return results.
-    Use this tool whenever the user asks about database information.
+    Supports pagination.
     """
 
     try:
@@ -71,7 +86,28 @@ def query_sql_database(query: str) -> str:
 
         cursor = connection.cursor(dictionary=True)
 
+        global LAST_QUERY
+        global OFFSET
+
+        q = query.lower().strip()
+
+        # pagination request
+        if any(word in q for word in ["next", "more"]):
+
+            if not LAST_QUERY:
+                return "There is no previous query to paginate."
+
+            OFFSET += LIMIT
+            query = f"{LAST_QUERY} LIMIT {LIMIT} OFFSET {OFFSET}"
+
+        else:
+            OFFSET = 0
+            query = enforce_limit(query)
+
+            LAST_QUERY = query.replace(f" LIMIT {LIMIT}", "")
+
         cursor.execute(query)
+
         result = cursor.fetchall()
 
         for row in result:
@@ -82,7 +118,11 @@ def query_sql_database(query: str) -> str:
         cursor.close()
         connection.close()
 
-        return str(result)
+        return {
+            "start": OFFSET + 1,
+            "end": OFFSET + len(result),
+            "rows": result
+        }
 
     except mysql.connector.Error as err:
         return f"SQL Error: {err}"

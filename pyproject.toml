@@ -10,7 +10,9 @@ dependencies = [
     "langchain-ollama>=0.3.10",
     "mysql-connector>=2.2.9",
     "sqlalchemy>=2.0.48",
-    "langgraph"
+    "langgraph",
+    "fastapi>=0.135.1",
+    "uvicorn>=0.42.0",
 ]
 
 [dependency-groups]
